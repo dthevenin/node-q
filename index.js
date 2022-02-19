@@ -1,3 +1,4 @@
+"use strict";
 var libc = require("./lib/c.js");
 var net = require("net");
 var tls = require("tls");
@@ -7,7 +8,6 @@ var assert = require("./lib/assert.js");
 var typed = require("./lib/typed.js");
 
 function Connection(socket, nanos2date, flipTables, emptyChar2null, long2number) {
-	"use strict";
 	events.EventEmitter.call(this);
 	this.socket = socket;
 	this.nanos2date = nanos2date;
@@ -32,7 +32,6 @@ function Connection(socket, nanos2date, flipTables, emptyChar2null, long2number)
 }
 util.inherits(Connection, events.EventEmitter);
 Connection.prototype.listen = function() {
-	"use strict";
 	var self = this;
 	this.chunk = new Buffer(0);
 	this.socket.on("data", function(inbuffer) {
@@ -86,7 +85,6 @@ Connection.prototype.listen = function() {
 	});
 };
 Connection.prototype.auth = function(auth, cb) {
-	"use strict";
 	var n = Buffer.byteLength(auth, "ascii"),
 		b = new Buffer(n + 2),
 		self = this;
@@ -108,7 +106,6 @@ Connection.prototype.auth = function(auth, cb) {
 	});
 };
 Connection.prototype.k = function(s, cb) {
-	"use strict";
 	cb = arguments[arguments.length - 1];
 	assert.func(cb, "cb");
 	var self = this,
@@ -138,7 +135,6 @@ Connection.prototype.k = function(s, cb) {
 	}
 };
 Connection.prototype.ks = function(s, cb) {
-	"use strict";
 	assert.string(s, "s");
 	cb = arguments[arguments.length - 1];
 	assert.func(cb, "cb");
@@ -155,7 +151,6 @@ Connection.prototype.ks = function(s, cb) {
 	});
 };
 Connection.prototype.close = function(cb) {
-	"use strict";
 	assert.optionalFunc(cb, "cb");
 	this.socket.once("close", function() {
 		if (cb) {
@@ -166,7 +161,6 @@ Connection.prototype.close = function(cb) {
 };
 
 function connect(params, cb) {
-	"use strict";
 	var auth,
 		errorcb,
 		closecb,
@@ -263,7 +257,6 @@ exports.connect = connect;
 
 // export typed API
 Object.keys(typed).forEach(function(k) {
-	"use strict";
 	if (/^[a-z]*$/.test(k[0])) {
 		exports[k] = typed[k];
 	}
