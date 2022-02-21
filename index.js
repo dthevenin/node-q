@@ -104,9 +104,7 @@ class Connection extends events.EventEmitter {
 		this.nextRequestNo += 1;
 		if (params.length === 0) {
 			// Listen for async responses
-			this.once("response:" + requestNo, function(err, o) {
-				cb(err, o);
-			});
+			this.once("response:" + requestNo, cb);
 		} else {
 			const s = params.shift();
 			assert.string(s, "s");
@@ -117,11 +115,7 @@ class Connection extends events.EventEmitter {
 			}
 			const b = libc.serialize(payload);
 			b.writeUInt8(0x1, 1); // MsgType: 1 := sync
-			this.socket.write(b, () => {
-				this.once("response:" + requestNo, function(err, o) {
-					cb(err, o);
-				});
-			});
+			this.socket.write(b, () => this.once("response:" + requestNo, cb));
 		}
 	}
 
@@ -136,18 +130,12 @@ class Connection extends events.EventEmitter {
 			payload = [s, ...params];
 		}
 		const b = libc.serialize(payload);
-		this.socket.write(b, function() {
-			cb();
-		});
+		this.socket.write(b, cb);
 	}
 
 	close(cb) {
 		assert.optionalFunc(cb, "cb");
-		this.socket.once("close", function() {
-			if (cb) {
-				cb();
-			}
-		});
+		this.socket.once("close", cb);
 		this.socket.end();
 	}
 }
