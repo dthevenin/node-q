@@ -7,6 +7,7 @@ const assert = require("./lib/assert.js");
 const typed = require("./lib/typed.js");
 
 class Connection extends events.EventEmitter {
+
 	constructor (socket, nanos2date, flipTables, emptyChar2null, long2number) {
 		super();
 		this.socket = socket;
@@ -20,6 +21,8 @@ class Connection extends events.EventEmitter {
 		this.socket.on("timeout", () => this.emit("timeout"));
 		this.socket.on("error", (err) => this.emit("error", err));
 		this.socket.on("close", (had_error) => this.emit("close", had_error));
+
+		this.kBuffer = Buffer.alloc(1024);
 	}
 
 	listen() {
@@ -113,9 +116,9 @@ class Connection extends events.EventEmitter {
 			} else {
 				payload = [s, ...params];
 			}
-			const b = libc.serialize(payload);
-			b.writeUInt8(0x1, 1); // MsgType: 1 := sync
-			this.socket.write(b, () => this.once("response:" + requestNo, cb));
+			this.kBuffer = libc.serialize(payload, this.kBuffer);
+			this.kBuffer.writeUInt8(0x1, 1); // MsgType: 1 := sync
+			this.socket.write(this.kBuffer, () => this.once("response:" + requestNo, cb));
 		}
 	}
 
@@ -129,8 +132,8 @@ class Connection extends events.EventEmitter {
 		} else {
 			payload = [s, ...params];
 		}
-		const b = libc.serialize(payload);
-		this.socket.write(b, cb);
+		this.kBuffer = libc.serialize(payload, this.kBuffer);
+		this.socket.write(this.kBuffer, cb);
 	}
 
 	close(cb) {
